@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Árbol de Corazones de Amor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #c8a2ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .initial-heart {
+            font-size: 150px;
+            cursor: pointer;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            transition: transform 0.3s ease;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .initial-heart:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .click-message {
+            position: fixed;
+            top: 70%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff1493;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: pulse 2s ease-in-out infinite;
+            z-index: 1001;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-out {
+            animation: fadeOutScale 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeOutScale {
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            padding: 28px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in;
+            opacity: 0;
+        }
+
+        .container.show {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #ff1493;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            background: linear-gradient(135deg, #ffd6e7 0%, #ffe6f0 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.1);
+        }
+
+        .message p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .message .signature {
+            color: #ff1493;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .tree-container {
+            position: relative;
+            width: 100%;
+            height: 560px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .tree-svg {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 560px;
+        }
+
+        .trunk-2d {
+            fill: #8B4513;
+            opacity: 0;
+            animation: growTrunk2D 1.2s ease-out 1.5s forwards;
+        }
+
+        @keyframes growTrunk2D {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .branch-2d {
+            stroke: #8B4513;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            animation: growBranch2D 0.8s ease-out forwards;
+        }
+
+        @keyframes growBranch2D {
+            to {
+                opacity: 1;
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .trunk {
+            display: none;
+        }
+
+        @keyframes growTrunk {
+            from {
+                height: 0;
+            }
+            to {
+                height: 100px;
+            }
+        }
+
+        .leaves {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 560px;
+            overflow: visible;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            animation: popHeart 0.2s ease-out;
+            opacity: 0;
+            animation-fill-mode: forwards;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+        }
+
+        .falling-heart {
+            position: fixed;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 100;
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes popHeart {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .counter-section {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            border-radius: 20px;
+            color: white;
+            margin-top: 16px;
+        }
+
+        .counter-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .counter {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .time-value {
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .footer-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #ff1493;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 20px;
+                padding: 16px;
+            }
+
+            .header {
+                margin-bottom: 14px;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+                margin-bottom: 4px;
+            }
+
+            .message {
+                padding: 14px;
+                margin-bottom: 12px;
+            }
+
+            .message p {
+                font-size: 0.95rem;
+                line-height: 1.5;
+                margin-bottom: 6px;
+            }
+
+            .message .signature {
+                font-size: 1rem;
+                margin-top: 8px;
+            }
+
+            .tree-container {
+                height: 340px;
+                margin: 12px 0;
+            }
+
+            .tree-svg, .leaves {
+                width: 320px;
+                height: 340px;
+            }
+
+            .counter-section {
+                padding: 14px;
+                border-radius: 14px;
+                margin-top: 10px;
+            }
+
+            .counter-title {
+                font-size: 1rem;
+                margin-bottom: 10px;
+            }
+
+            .counter {
+                gap: 10px;
+            }
+
+            .time-value {
+                font-size: 1.6rem;
+            }
+
+            .time-unit {
+                min-width: 52px;
+            }
+
+            .time-label {
+                font-size: 0.75rem;
+            }
+
+            .footer-title {
+                font-size: 1.2rem;
+                margin-top: 12px;
+                margin-bottom: 4px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .initial-heart {
+                font-size: 100px;
+            }
+
+            .click-message {
+                top: 66%;
+                font-size: 1.05rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .tree-container {
+                height: 340px;
+            }
+
+            .tree-svg, .leaves {
+                width: 320px;
+                height: 340px;
+            }
+
+            .time-value {
+                font-size: 1.45rem;
+            }
+
+            .time-unit {
+                min-width: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Corazón inicial -->
+    <div class="initial-heart" id="initialHeart">💖</div>
+    <div class="click-message" id="clickMessage">✨Haz clic en el corazón ✨</div>
+    <div class="container hidden" id="mainContainer">
+        <div class="header">
+            <h1>✨ Para el amor de mi vida ✨</h1>
+        </div>
+
+        <div class="message">
+            <p>Lo que siento cuando estoy contigo no lo cambio por nada.</p>
+            <p>Mientras más compartimos tiempo, más seguro estoy de que quiero seguir a tu lado.</p>
+            <p class="signature">Gracias por existir en mi vida</p>
+        </div>
+
+        <div class="tree-container">
+            <svg class="tree-svg" id="treeSvg" viewBox="0 0 600 700" preserveAspectRatio="xMidYMax meet">
+            </svg>
+            <div class="leaves" id="leaves"></div>
+        </div>
+
+        <div class="counter-section">
+            <div class="counter-title">Nuestra historia comenzó hace…</div>
+            <div class="counter">
+                <div class="time-unit">
+                    <div class="time-value" id="days">0</div>
+                    <div class="time-label">días</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="hours">0</div>
+                    <div class="time-label">horas</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="minutes">0</div>
+                    <div class="time-label">minutos</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="seconds">0</div>
+                    <div class="time-label">segundos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-title">
+            💖 Corazones que crecen, como lo nuestro 💖
+        </div>
+    </div>
+
+    <script>
+        // Fecha de inicio: 10 de noviembre de 2024
+        const startDate = new Date('2024-11-10T14:30:00');
+        const BASE_TREE_WIDTH = 600;
+        const BASE_TREE_HEIGHT = 700;
+
+        // Colores rojos, rosas y fucsias
+        const colors = ['#ff4d6d', '#ff758f', '#ff8fab', '#ffb3c6', '#ffc2d1', '#ff5c8a', '#e75480', '#ff6fa3'];
+
+        let branchPoints = [];
+
+        function drawBranch(svg, x1, y1, angle, depth, length, width, delay) {
+            if (depth <= 0 || length < 6) {
+                return delay;
+            }
+
+            const curve = (Math.random() - 0.5) * 24;
+            const cx = x1 + Math.cos(angle) * (length * 0.5) - Math.sin(angle) * curve;
+            const cy = y1 + Math.sin(angle) * (length * 0.5) + Math.cos(angle) * curve;
+            const x2 = x1 + Math.cos(angle) * length;
+            const y2 = y1 + Math.sin(angle) * length;
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+            path.setAttribute('class', 'branch-2d');
+            path.setAttribute('stroke-width', String(Math.max(1.2, width)));
+
+            const approxLength = Math.max(30, length * 1.2);
+            path.style.strokeDasharray = `${approxLength}`;
+            path.style.strokeDashoffset = `${approxLength}`;
+            path.style.animationDelay = `${delay.toFixed(2)}s`;
+            svg.appendChild(path);
+
+            if (depth <= 3) {
+                const leafCount = depth === 1 ? 6 : 4;
+                for (let i = 0; i < leafCount; i++) {
+                    const t = 0.45 + Math.random() * 0.55;
+                    const px = (1 - t) * (1 - t) * x1 + 2 * (1 - t) * t * cx + t * t * x2;
+                    const py = (1 - t) * (1 - t) * y1 + 2 * (1 - t) * t * cy + t * t * y2;
+                    branchPoints.push({ x: px, y: py, delay: delay + 0.05 + i * 0.006 });
+                }
+            }
+
+            if (depth === 1) {
+                branchPoints.push({ x: x2, y: y2, delay: delay + 0.08 });
+            }
+
+            let currentDelay = delay + 0.02;
+            const nextLength = length * (0.72 + Math.random() * 0.08);
+            const nextWidth = width * 0.7;
+            const spread = 0.35 + Math.random() * 0.3;
+
+            currentDelay = drawBranch(svg, x2, y2, angle - spread, depth - 1, nextLength, nextWidth, currentDelay);
+            currentDelay = drawBranch(svg, x2, y2, angle + spread, depth - 1, nextLength, nextWidth, currentDelay);
+
+            if (depth >= 4 && Math.random() > 0.45) {
+                currentDelay = drawBranch(
+                    svg,
+                    x2,
+                    y2,
+                    angle + (Math.random() - 0.5) * 0.22,
+                    depth - 2,
+                    nextLength * 0.78,
+                    nextWidth * 0.75,
+                    currentDelay
+                );
+            }
+
+            return currentDelay;
+        }
+
+        // Función para crear el árbol estilo ilustración plana 2D
+        function createTree() {
+            const svg = document.getElementById('treeSvg');
+            const centerX = 300;
+            const groundY = 660;
+            branchPoints = [];
+            svg.innerHTML = '';
+            document.getElementById('leaves').innerHTML = '';
+            
+            // 1. TRONCO - Más ancho en la base
+            const trunkPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const trunkShape = `M ${centerX - 24} ${groundY} C ${centerX - 22} ${groundY - 95}, ${centerX - 14} ${groundY - 170}, ${centerX - 8} ${groundY - 225} L ${centerX + 8} ${groundY - 225} C ${centerX + 14} ${groundY - 170}, ${centerX + 22} ${groundY - 95}, ${centerX + 24} ${groundY} Z`;
+            trunkPath.setAttribute('d', trunkShape);
+            trunkPath.setAttribute('fill', '#8B4513');
+            trunkPath.setAttribute('class', 'trunk-2d');
+            svg.appendChild(trunkPath);
+            
+            let totalDelay = 0.75;
+            totalDelay = drawBranch(svg, centerX, groundY - 218, -Math.PI / 2, 7, 84, 11, totalDelay);
+            totalDelay = drawBranch(svg, centerX - 4, groundY - 196, -Math.PI / 2 - 0.42, 6, 72, 8.5, 0.86);
+            totalDelay = drawBranch(svg, centerX + 4, groundY - 196, -Math.PI / 2 + 0.42, 6, 72, 8.5, 0.9);
+
+            return totalDelay + 0.15;
+        }
+
+        // Función para iniciar la experiencia
+        function startLoveExperience() {
+            const initialHeart = document.getElementById('initialHeart');
+            const clickMessage = document.getElementById('clickMessage');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            // Ocultar elementos iniciales
+            initialHeart.classList.add('fade-out');
+            clickMessage.classList.add('fade-out');
+
+            setTimeout(() => {
+                initialHeart.style.display = 'none';
+                clickMessage.style.display = 'none';
+                mainContainer.classList.remove('hidden');
+                mainContainer.classList.add('show');
+
+                const treeDelay = createTree();
+                createHeartTree(treeDelay);
+                updateCounter();
+                setInterval(updateCounter, 1000);
+            }, 700);
+        }
+
+        // 4. Función para crear corazones en todas las ramas
+        function createHeartTree(startDelay) {
+            const leavesContainer = document.getElementById('leaves');
+
+            function placeHeart(heart, x, y, fontSize, rotationDeg) {
+                const leftPercent = (x / BASE_TREE_WIDTH) * 100;
+                const topPercent = (y / BASE_TREE_HEIGHT) * 100;
+                heart.style.left = `${leftPercent}%`;
+                heart.style.top = `${topPercent}%`;
+                heart.style.fontSize = `${fontSize}px`;
+                heart.style.transform = `translate(-50%, -50%) rotate(${rotationDeg}deg)`;
+            }
+
+            const centerX = 300;
+            const centerY = 360;
+            const centerTargets = [];
+            const maxX = 116;
+            const maxY = 84;
+
+            for (let y = -maxY; y <= maxY; y += 9) {
+                for (let x = -maxX; x <= maxX; x += 9) {
+                    const ellipse = (x * x) / (maxX * maxX) + (y * y) / (maxY * maxY);
+                    if (ellipse <= 1) {
+                        centerTargets.push({ x, y, ellipse });
+                    }
+                }
+            }
+
+            centerTargets.sort((a, b) => a.ellipse - b.ellipse);
+
+            const centerPoints = centerTargets.map((target) => ({
+                x: centerX + target.x,
+                y: centerY + target.y,
+                delay: 0.05 + target.ellipse * 0.28
+            }));
+
+            const allPoints = [...branchPoints, ...centerPoints].sort((a, b) => a.delay - b.delay);
+            let index = 0;
+
+            allPoints.forEach((point) => {
+                const clusterSize = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < clusterSize; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.className = 'heart';
+                        heart.innerHTML = '♥';
+
+                        const radius = 5 + Math.random() * 16;
+                        const angle = Math.random() * Math.PI * 2;
+                        const x = point.x + Math.cos(angle) * radius;
+                        const y = point.y + Math.sin(angle) * radius;
+
+                        heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+                        placeHeart(
+                            heart,
+                            x,
+                            y,
+                            10 + Math.random() * 8,
+                            (Math.random() - 0.5) * 24
+                        );
+
+                        leavesContainer.appendChild(heart);
+                    }, (startDelay + point.delay) * 1000 + index * 1.2);
+                    index += 1;
+                }
+            });
+        }
+
+        // Función para actualizar el contador
+        function updateCounter() {
+            const now = new Date();
+            const difference = now - startDate;
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(3, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            // Evento click en el corazón inicial
+            document.getElementById('initialHeart').addEventListener('click', startLoveExperience);
+        });
+    </script>
+</body>
+</html>
